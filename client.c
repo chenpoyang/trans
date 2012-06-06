@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    while (printf("Enter Path:"), fgets(buf, sizeof(buf), stdin) != NULL)
+    while (printf("Enter Path:"), scanf("%s", buf) != EOF)
     {
         puts("sending....");
         send_file(sock_fd, buf);
@@ -96,11 +96,13 @@ void send_file(const int fd, const char *path)
 {
     int total_bytes, send_bytes, chk;
     FILE *fp = NULL;
-    static char buf[1500], res[128];
+    static char buf[1500], res[128], filename[128];
 
     assert(path != NULL && strlen(path) >= 0);
 
-    fp = fopen(path, "r");
+    printf("filename = %s\r\n", filename);
+    strcpy(filename, path);
+    fp = fopen(filename, "r");
     if (NULL == fp)
     {
         printf("file open error, make sure the absolve path is right!\r\n");
@@ -108,20 +110,23 @@ void send_file(const int fd, const char *path)
     }
 
     /* point to the end of the file */
-    total_bytes = fseek(fp, 0, SEEK_END);
+    fseek(fp, 0, SEEK_END);
+    /* get the file size */
+    total_bytes = ftell(fp);
+    /* point to the header */
+    fseek(fp, 0, SEEK_SET);
 
     /* file messages */
-    strcpy(buf, path);
+    strcpy(buf, filename);
     strcat(buf, " ");
     m_ntoa(total_bytes, res);
     strcat(buf, res);
-    strcat(buf, "\r\n\r\n");
+    strcat(buf, " \r\n\r\n");
     send(fd, buf, strlen(buf), 0);
 
     /* the bytes the client send */
     send_bytes = 0;
-    /* point to the header */
-    fseek(fp, 1, SEEK_SET);
+    printf("file = %s, bytes = %d\r\n", filename, total_bytes);
     while (fread(buf, sizeof(buf), 1, fp))
     {
         send(fd, buf, sizeof(buf), 0);

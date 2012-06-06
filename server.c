@@ -115,7 +115,7 @@ void *recv_thrd(void *arg)   /* server for client */
     while ((rec_bytes = recv(sock_fd, buf, sizeof(buf), 0)) > 0)
     {
         ptr = strstr(buf, "\r\n\r\n");
-        index = ptr - buf - 4;
+        index = ptr - buf;
         strncpy(res, buf, index);
         res[index] = '\0';
         get_filename(res, filename);
@@ -135,16 +135,21 @@ void *recv_thrd(void *arg)   /* server for client */
         if ((fp = fopen(filename, "r")) != NULL)
         {
             puts("error, file exist!");
+            fclose(fp);
             return NULL;
         }
+
+        printf("filename = %s\r\n", filename);
+        fp = fopen(filename, "a+");
 
         left = rec_bytes - (ptr - buf + 4);
         fwrite(ptr + 4, left, 1, fp);
         fflush(fp);
         fclose(fp);
-
         total_bytes -= left;
+
         save_file(sock_fd, filename, total_bytes);
+        printf("file %s saved, bytes = %d\r\n", filename, total_bytes + left);
     }
 
     close(sock_fd);
@@ -205,11 +210,11 @@ void get_filename(const char *cli_file_name, char *ret)
     ptr = strrchr(cli_file_name, '/');
     if (NULL == ptr)
     {
-        strcpy(ret, cli_file_name);
+        sscanf(cli_file_name, "%s", ret);
     }
     else
     {
-        strcpy(ret, ptr + 1);
+        sscanf(ptr + 1, "%s", ret);
     }
 }
 
@@ -248,5 +253,7 @@ void save_file(const int fd, const char *filename, const int total)
         fwrite(buf, chk, 1, fp);
         w_bytes += chk;
     }
+    fflush(fp);
+    fclose(fp);
     printf("%s: save!", filename);
 }
