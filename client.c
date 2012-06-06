@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    while (printf("Enter Path:"), scanf("%s", buf) != EOF)
+    while (printf("Enter Path(eg:\"./from/trans.tar.bz2\"):"), scanf("%s", buf) != EOF)
     {
         puts("sending....");
         send_file(sock_fd, buf);

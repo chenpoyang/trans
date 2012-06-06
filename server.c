@@ -122,8 +122,10 @@ void *recv_thrd(void *arg)   /* server for client */
         res[index] = '\0';
         get_filename(res, filename);
         total_bytes = get_file_length(res);
-        printf("please enter the folder to save\"%s\":", filename);
-        scanf("%s", res);
+        printf("please enter the folder to save \"%s\" (eg:\"./to/\"):", filename);
+        //scanf("%s", res);
+printf("服务器默认存放在: \"./to/\" 下\r\n");
+        strcpy(res, "./to/");
         index = strlen(res);
         if (res[index - 1] != '/')
         {
