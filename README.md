@@ -26,4 +26,4 @@ progress bar
 
 关于跨平台
 =========
-    本程序除用了 posix 的pthread外, 实现全部用 ANSI C实现.
+    本程序主要用到了 posix 的pthread;
