@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include "global.h"
+#include "progress.h"
 
 /* 服务器ip和端口号 */
 #define _addr_ "127.0.0.1"
@@ -23,6 +24,7 @@ static pthread_t cli_thrd[1024];    /* 服务器并发线程 */
 Client cli[1024];   /* 客户端 */
 static int cli_que_len;
 static char buf[MAX_BUF_LEN];
+static Progress bar;
 
 void *recv_thrd(void *arg);   /* server for client */
 void remove_client(const int client_id);    /* deal with client quit */
@@ -148,6 +150,11 @@ void *recv_thrd(void *arg)   /* server for client */
         fclose(fp);
         total_bytes -= left;
 
+        /* initial progress bar */
+        init_progress(&bar, total_bytes + left);
+        update_progress(&bar, left);
+        display_image(&bar);
+
         save_file(sock_fd, filename, total_bytes);
         printf("file %s saved, bytes = %d\r\n", filename, total_bytes + left);
     }
@@ -252,7 +259,13 @@ void save_file(const int fd, const char *filename, const int total)
         chk = recv(fd, buf, sizeof(buf), 0);
         fwrite(buf, chk, 1, fp);
         w_bytes += chk;
+        fflush(fp);
+
+        /* update progress bar */
+        update_progress(&bar, chk);
+        display_image(&bar);
     }
+    putchar('\n');
     fflush(fp);
     fclose(fp);
     printf("%s: save!", filename);

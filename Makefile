@@ -17,7 +17,7 @@ CXXFLAGS	= -O2 -Wall -g $(DEFINES)
 ALL_T		= server client
 
 # all object
-CORE_OBJ    = global.o
+CORE_OBJ    = global.o progress.o
 CLIENT_OBJ  = client.o
 SERVER_OBJ  = server.o
 ALL_OBJ     = $(CORE_OBJ) $(CLIENT_OBJ) $(SERVER_OBJ)
@@ -41,3 +41,4 @@ clean:
 global.o	: global.c global.h
 client.o	: client.c global.h
 server.o    : server.c global.h
+progress.o  : progress.c progress.h global.h

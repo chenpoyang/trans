@@ -9,11 +9,13 @@
 #include <unistd.h>
 #include <pthread.h>
 #include "global.h"
+#include "progress.h"
 
 static char buf[MAX_BUF_LEN];
 
 void *recv_thrd(void *arg); /* 客户端接收信息线程 */
 void send_file(const int fd, const char *path); /* 向目的端发送文件字节流 */
+static Progress bar;
 
 int main(int argc, char *argv[])
 {
@@ -116,6 +118,9 @@ void send_file(const int fd, const char *path)
     /* point to the header */
     fseek(fp, 0, SEEK_SET);
 
+    /* initial progress bar */
+    init_progress(&bar, total_bytes);
+
     /* file messages */
     strcpy(buf, filename);
     strcat(buf, " ");
@@ -131,10 +136,18 @@ void send_file(const int fd, const char *path)
     {
         send(fd, buf, sizeof(buf), 0);
         send_bytes += sizeof(buf);
+
+        /* update and display progress bar */
+        update_progress(&bar, sizeof(buf));
+        display_image(&bar);
     }
     chk = send(fd, buf, total_bytes - send_bytes, 0);
     if (total_bytes - send_bytes == chk)
     {
         send_bytes = total_bytes;
+
+        /* update and display progress bar */
+        update_progress(&bar, chk);
+        display_image(&bar);
     }
 }
